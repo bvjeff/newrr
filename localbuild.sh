@@ -44,7 +44,7 @@ function create() {
   fi
 
   # Backup the original python3 executable.
-  sudo mv -f "$(realpath $(which python3))/EXTERNALLY-MANAGED" "$(realpath $(which python3))/EXTERNALLY-MANAGED.bak" 2>/dev/null || true
+  sudo mv -f "$(realpath "$(which python3)")/EXTERNALLY-MANAGED" "$(realpath "$(which python3)")/EXTERNALLY-MANAGED.bak" 2>/dev/null || true
   sudo pip3 install -U click requests requests-toolbelt qrcode[pil] beautifulsoup4
 
   sudo locale-gen ar_SA.UTF-8 de_DE.UTF-8 en_US.UTF-8 es_ES.UTF-8 fr_FR.UTF-8 ja_JP.UTF-8 ko_KR.UTF-8 ru_RU.UTF-8 th_TH.UTF-8 tr_TR.UTF-8 uk_UA.UTF-8 vi_VN.UTF-8 zh_CN.UTF-8 zh_HK.UTF-8 zh_TW.UTF-8
@@ -107,11 +107,11 @@ function init() {
     exit 1
   fi
   . "$(dirname "${BASH_SOURCE[0]}")/rr.env"
-  pushd "${CHROOT_PATH}/initrd/opt/rr" >/dev/null
+  pushd "${CHROOT_PATH}/initrd/opt/rr" || exit 1
   echo "init"
   ./init.sh
   local RET=$?
-  popd >/dev/null
+  popd || exit 1
   [ ${RET} -ne 0 ] && echo "Failed." || echo "Success."
   exit ${RET}
 }
@@ -123,7 +123,7 @@ function config() {
   fi
   . "$(dirname "${BASH_SOURCE[0]}")/rr.env"
   local RET=1
-  pushd "${CHROOT_PATH}/initrd/opt/rr" >/dev/null
+  pushd "${CHROOT_PATH}/initrd/opt/rr" || exit 1
   while true; do
     if [ -z "${1}" ]; then
       echo "menu"
@@ -138,7 +138,7 @@ function config() {
     fi
     break
   done
-  popd >/dev/null
+  popd || exit 1
   [ ${RET} -ne 0 ] && echo "Failed." || echo "Success."
   exit ${RET}
 }
@@ -150,7 +150,7 @@ function build() {
   fi
   . "$(dirname "${BASH_SOURCE[0]}")/rr.env"
   local RET=1
-  pushd "${CHROOT_PATH}/initrd/opt/rr" >/dev/null
+  pushd "${CHROOT_PATH}/initrd/opt/rr" || exit 1
   while true; do
     echo "build"
     ./menu.sh make -1 || break
@@ -159,7 +159,7 @@ function build() {
     RET=0
     break
   done
-  popd >/dev/null
+  popd || exit 1
   [ ${RET} -ne 0 ] && echo "Failed." || echo "Success."
   exit ${RET}
 }
@@ -210,4 +210,4 @@ function pack() {
   exit 0
 }
 
-$@
+"$@"

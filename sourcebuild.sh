@@ -42,10 +42,12 @@ convertpo2mo "files/initrd/opt/rr/lang"
 repackInitrd "files/mnt/p3/initrd-rr" "files/initrd"
 
 if [ -n "${1}" ]; then
+  LOADER_DISK="LOCALBUILD"
+  CHROOT_PATH="$(realpath files)"
   export LOADER_DISK="LOCALBUILD"
-  export CHROOT_PATH="$(realpath files)"
+  export CHROOT_PATH="${CHROOT_PATH}"
   (
-    cd "${CHROOT_PATH}/initrd/opt/rr"
+    cd "${CHROOT_PATH}/initrd/opt/rr" || exit 1
     ./init.sh
     ./menu.sh modelMenu "${1}"
     ./menu.sh productversMenu "${2:-7.2}"
@@ -103,8 +105,8 @@ while read -r F; do
     zip -9j "update.zip" "${FTGZ}"
     rm -f "${FTGZ}"
   else
-    (cd $(dirname "${F}") && sha256sum $(basename "${F}")) >>sha256sum
+    (cd "$(dirname "${F}")" && sha256sum "$(basename "${F}")") >>sha256sum
     zip -9j "update.zip" "${F}"
   fi
-done <<<$(yq '.replace | explode(.) | to_entries | map([.key])[] | .[]' update-list.yml)
+done <<<"$(yq '.replace | explode(.) | to_entries | map([.key])[] | .[]' update-list.yml)"
 zip -9j "update.zip" sha256sum
