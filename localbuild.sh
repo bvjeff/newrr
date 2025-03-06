@@ -37,7 +37,7 @@ function create() {
 
   sudo apt update
   sudo apt install -y locales busybox dialog gettext sed gawk jq curl
-  sudo apt install -y python-is-python3 python3-pip libelf-dev qemu-utils cpio xz-utils lz4 lzma bzip2 gzip zstd
+  sudo apt install -y python-is-python3 python3-pip libelf-dev qemu-utils dosfstools cpio xz-utils lz4 lzma bzip2 gzip zstd
   # sudo snap install yq
   if ! command -v yq &>/dev/null || ! yq --version 2>/dev/null | grep -q "v4."; then
     sudo curl -kL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/bin/yq && sudo chmod a+x /usr/bin/yq
@@ -51,6 +51,11 @@ function create() {
 
   LOOPX=$(sudo losetup -f)
   sudo losetup -P "${LOOPX}" "${RRIMGPATH}"
+
+  # Check partitions and ignore errors
+  fsck.vfat -aw "${LOOPX}p1" >/dev/null 2>&1 || true
+  fsck.ext2 -p "${LOOPX}p2" >/dev/null 2>&1 || true
+  fsck.ext4 -p "${LOOPX}p3" >/dev/null 2>&1 || true
 
   echo "Mounting image file"
   for i in {1..3}; do
@@ -180,6 +185,11 @@ function pack() {
 
   LOOPX=$(sudo losetup -f)
   sudo losetup -P "${LOOPX}" "${RRIMGPATH}"
+
+  # Check partitions and ignore errors
+  fsck.vfat -aw "${LOOPX}p1" >/dev/null 2>&1 || true
+  fsck.ext2 -p "${LOOPX}p2" >/dev/null 2>&1 || true
+  fsck.ext4 -p "${LOOPX}p3" >/dev/null 2>&1 || true
 
   echo "Mounting image file"
   for i in {1..3}; do
